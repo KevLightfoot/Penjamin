@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Pen Hits Tracker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Click Buttons -->
+  <div class="button-row">
+    {% for pen in pens %}
+      <button class="pill-btn" onclick="sendClick('{{ pen }}')">{{ pen }}</button>
+    {% endfor %}
+  </div>
+
+  <!-- TRACKER (collapsible) -->
+  <details id="tracker" class="card collapse tracker">
+    <summary>
+      <span class="collapse-title">Tracker</span>
+      <span class="caret">▾</span>
+    </summary>
+
+    <div class="collapse-body">
+      <div class="limits-row">
+        <span><strong>Daily limit:</strong> {{ daily_limit }}</span>
+        <span><strong>Total limit:</strong> {{ total_limit }}</span>
+      </div>
+
+      <div id="stats-grid"></div>
+    </div>
+  </details>
+
+  <!-- ADJUST COUNTS (collapsible) -->
+  <details id="adjust" class="card collapse adjust">
+    <summary>
+      <span class="collapse-title">Adjust counts</span>
+      <span class="caret">▾</span>
+    </summary>
+
+    <div class="collapse-body">
+      <form id="adjust-form" onsubmit="return adjustCounts(event)">
+        <div class="form-grid">
+          <label>
+            Pen
+            <select id="adj-pen">
+              {% for pen in pens %}
+                <option value="{{ pen }}">{{ pen }}</option>
+              {% endfor %}
+            </select>
+          </label>
+
+          <label>
+            Today's daily hits
+            <input id="adj-daily" type="number" min="0" placeholder="leave blank to skip" />
+          </label>
+
+          <label>
+            Total hits
+            <input id="adj-total" type="number" min="0" placeholder="leave blank to skip" />
+          </label>
+
+          <div class="form-actions">
+            <button type="submit" class="pill-btn small">Update</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </details>
+
+  <script>
+    const DAILY_LIMIT = {{ daily_limit|tojson }};
+    const TOTAL_LIMIT = {{ total_limit|tojson }};
+
+    async function sendClick(pen) {
+      await fetch('/click', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ pen })
+      });
+      updateStats();
+    }
+
+    async function adjustCounts(e) {
+      e.preventDefault();
+      const pen = document.getElementById('adj-pen').value;
+      const dailyStr = document.getElementById('adj-daily').value.trim();
+      const totalStr = document.getElementById('adj-total').value.trim();
+
+      const payload = { pen };
+      if (dailyStr !== '') payload.daily = Number(dailyStr);
+      if (totalStr !== '') payload.total = Number(totalStr);
+
+      const res = await fetch('/adjust', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const out = await res.json();
+
+      if (out.status !== 'ok') {
+        alert(out.message || 'Update failed');
+        return false;
+      }
+
+      // Clear inputs (keep pen selection)
+      document.getElementById('adj-daily').value = '';
+      document.getElementById('adj-total').value = '';
+      updateStats();
+      return false;
+    }
+
+    function penBlockHTML(pen, s){
+      return `
+        <div class="pen-block">
+          <div class="pen-name">${pen}:</div>
+
+          <div class="line">
+            <span class="label">${s.daily}/${DAILY_LIMIT}</span>
+            <span class="value">— ${s.daily_remaining} remaining</span>
+            <span class="chip">${s.daily}</span>
+          </div>
+
+          <div class="line">
+            <span class="label">${s.total}/${TOTAL_LIMIT}</span>
+            <span class="value">— ${s.total_remaining} remaining</span>
+            <span class="chip">${s.total}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    async function updateStats(){
+      const res = await fetch('/stats');
+      const data = await res.json();
+      const stats = data.stats;
+
+      const grid = document.getElementById('stats-grid');
+      grid.innerHTML = '';
+      Object.entries(stats).forEach(([pen, s]) => {
+        grid.insertAdjacentHTML('beforeend', penBlockHTML(pen, s));
+      });
+    }
+
+    // Initial render
+    updateStats();
+  </script>
+</body>
+</html>
