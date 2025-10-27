@@ -1,157 +1,164 @@
+/* ===== iPhone Safari–friendly, mobile-first ===== */
 :root{
-  --bg: #eef2f8;
-  --ink: #1f2937;
-  --muted: #6b7280;
+  /* Scale with device width */
+  --font-base: 16px;
+  --radius: 14px;
+  --gap: 12px;
 
-  --brand1: #6a11cb;
-  --brand2: #2575fc;
+  --bg: #0f1220;          /* dark gradient background that looks good on OLED */
+  --bg2:#1a1f36;
+  --ink: #e6e8ef;
+  --muted: #a6accd;
 
-  --card: #ffffff;
-  --ring: rgba(37,117,252,0.32);
+  --brand1:#6a11cb;
+  --brand2:#2575fc;
 
-  /* Noticeable header backgrounds */
-  --tracker-grad: linear-gradient(135deg, #ffe8d6, #ffd0e1);
-  --adjust-grad:  linear-gradient(135deg, #d6f7ff, #d6e2ff);
+  --card:#13172a;
+  --cardBorder:#26304f;
+  --ring: rgba(37,117,252,.35);
 
-  --chip: #eef2ff;
-  --chip-text: #1e3a8a;
+  --chip:#1e2543;
+  --chip-text:#c8d1ff;
 }
 
-*{ box-sizing: border-box; }
+/* Prevent iOS font auto-boost & enable momentum scroll */
+html { -webkit-text-size-adjust: 100%; }
+* { box-sizing: border-box; }
+*:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--ring); }
 
 body{
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-  background: var(--bg);
+  font-size: var(--font-base);
   color: var(--ink);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 28px 16px 60px;
 
-  background-image: url('https://thumbs.dreamstime.com/b/abstract-black-background-smoke-fog-cloud-isolated-159803009.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  /* Background (nice on iPhone) */
+  background: radial-gradient(1200px 700px at 50% -200px, var(--bg2), var(--bg));
+
+  /* Safe areas for iOS notches/home bar */
+  padding: calc(env(safe-area-inset-top) + 12px)
+           calc(env(safe-area-inset-right) + 12px)
+           calc(env(safe-area-inset-bottom) + 28px)
+           calc(env(safe-area-inset-left) + 12px);
+
+  display:flex; flex-direction:column; align-items:center;
+
+  min-height: 100vh;
+  /* iOS Safari 100vh fix */
+  min-height: -webkit-fill-available;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.25); /* adjusts darkness */
-  z-index: -1;
-}
-
-/* Buttons row */
+/* === Buttons row === */
 .button-row{
-  display:flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin: 6px 0 24px;
-  justify-content: center;
+  display:flex; flex-wrap:wrap; gap: var(--gap);
+  width: 100%;
+  max-width: 680px;
+  justify-content:center;
+  margin: 6px 0 14px;
 }
+
 .pill-btn{
   border: 0;
   border-radius: 999px;
-  padding: 12px 18px;
-  font-weight: 600;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 15px;               /* >=16 prevents iOS zoom on tap fields; buttons are fine at 15 */
   cursor: pointer;
   color: #fff;
   background: linear-gradient(135deg, var(--brand1), var(--brand2));
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 .pill-btn.small{ padding: 10px 14px; font-size: 14px; }
-.pill-btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,0.16); }
-.pill-btn:active{ transform: translateY(0); }
+.pill-btn:active{ transform: translateY(1px); box-shadow: 0 6px 18px rgba(0,0,0,.22); }
 
-/* Generic card + collapsible */
+/* === Cards / Collapsibles === */
 .card{
-  width: min(880px, 95vw);
-  border-radius: 16px;
+  width: 100%;
+  max-width: 680px;
+  border-radius: var(--radius);
   background: var(--card);
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 14px 36px rgba(0,0,0,0.12);
+  border: 1px solid var(--cardBorder);
+  box-shadow: 0 12px 28px rgba(0,0,0,.35);
   overflow: hidden;
-  margin-top: 12px;
+  margin-top: var(--gap);
 }
 
+/* summary needs big tap target on iPhone */
 .collapse > summary{
   list-style: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 22px;
-  user-select: none;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 16px 16px;
+  -webkit-user-select:none; user-select:none;
 }
 .collapse .collapse-title{
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: .3px;
+  font-size: 18px; font-weight: 900; letter-spacing:.3px;
 }
-.caret{ font-size: 18px; opacity: .7; transition: transform .15s ease; }
+.caret{ font-size: 18px; opacity:.8; transition: transform .15s ease; }
 .collapse[open] .caret{ transform: rotate(180deg); }
 
+/* distinct headers for the two boxes */
+.card.tracker > summary{
+  background: linear-gradient(135deg, rgba(106,17,203,.22), rgba(37,117,252,.18));
+}
+.card.adjust  > summary{
+  background: linear-gradient(135deg, rgba(0,200,255,.18), rgba(0,140,255,.14));
+}
+
 .collapse .collapse-body{
-  padding: 18px 22px 22px;
-  background: #f9faff;
+  padding: 14px 14px 18px;
+  background: #0f1428;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Specific header colors */
-.card.tracker > summary{ background: var(--tracker-grad); }
-.card.adjust  > summary{ background: var(--adjust-grad); }
-
-/* Limits bar inside tracker */
+/* Limits row */
 .limits-row{
-  display:flex;
-  gap: 18px;
-  justify-content: flex-end;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 10px;
+  display:flex; gap:12px; justify-content:flex-end;
+  color: var(--muted); font-size: 13px; margin-bottom: 8px;
 }
 
-/* Stats blocks */
-#stats-grid{
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
+/* Stats list */
+#stats-grid{ display:grid; grid-template-columns:1fr; gap:10px; }
 .pen-block{
-  padding: 14px 12px;
+  padding: 12px;
   border-radius: 12px;
-  border: 1px solid #e8ecf5;
-  background: #fbfcff;
+  border: 1px solid var(--cardBorder);
+  background: #0e1632;
 }
-.pen-name{ font-weight: 800; margin-bottom: 8px; }
-.line{
-  display:flex; align-items:center; gap: 8px;
-  font-size: 15px; margin: 4px 0;
-}
-.label{ color: var(--muted); min-width: 100px; }
+
+.pen-name{ font-weight: 800; margin-bottom: 6px; }
+.line{ display:flex; align-items:center; gap:8px; font-size:15px; margin: 3px 0; }
+.label{ color: var(--muted); min-width: 96px; }
 .value{ color: var(--muted); }
 .chip{
   margin-left:auto; background: var(--chip); color: var(--chip-text);
-  border-radius: 999px; padding: 4px 10px; font-weight: 700;
-  border: 1px solid #dbe3ff;
+  border-radius: 999px; padding: 4px 10px; font-weight: 800;
+  border: 1px solid #32406f;
 }
 
 /* Adjust form */
 .form-grid{
-  display: grid;
-  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  display:grid;
+  grid-template-columns: 1fr;   /* one column on phone */
   gap: 12px;
 }
 .form-grid label{ display:flex; flex-direction:column; gap:6px; font-size:14px; }
 .form-grid input, .form-grid select{
-  border: 1px solid #d6dbe7; border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none;
+  border: 1px solid #38436a; border-radius: 10px; padding: 12px;
+  font-size: 16px;             /* >=16px prevents iOS zoom on focus */
+  background:#0a1130; color: var(--ink);
 }
 .form-grid input:focus, .form-grid select:focus{
   box-shadow: 0 0 0 3px var(--ring); border-color: transparent;
 }
-.form-actions{ display:flex; align-items:end; }
+.form-actions{ display:flex; justify-content:flex-end; }
 
-summary:focus { outline: none; box-shadow: 0 0 0 3px var(--ring); }
+/* ---- Bigger screens: add a little breathing room ---- */
+@media (min-width: 640px){
+  :root{ --font-base: 17px; --gap: 14px; }
+  .form-grid{ grid-template-columns: repeat(4, minmax(140px,1fr)); }
+  .pill-btn{ font-size:16px; padding: 12px 18px; }
+  .collapse .collapse-body{ padding: 18px 18px 22px; }
+}
